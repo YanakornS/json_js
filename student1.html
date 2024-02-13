@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Student Attendance</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>รายชื่อการเข้าเรียน</h1>
+    <div id="attendance-table">
+      <div id="search-bar">
+        <input type="text" placeholder="ค้นหาชื่อนักศึกษา" id="search-input" />
+      </div>
+      <div id="add-form" style="text-align: center; margin-bottom: 20px;">
+        <label for="id">รหัสประจำตัว:</label>
+        <input type="text" id="id">
+        <label for="name">ชื่อ:</label>
+        <input type="text" id="name">
+        <button onclick="addPerson()">เพิ่มบุคคล</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ลำดับ</th>
+            <th>รหัสประจำตัว</th>
+            <th>ชื่อ</th>
+            <th>สัปดาห์1</th>
+            <th>สัปดาห์2</th>
+            <th>สัปดาห์3</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <script>
+      // ฟังก์ชันเพิ่มบุคคล
+      function addPerson() {
+        const idInput = document.getElementById('id');
+        const nameInput = document.getElementById('name');
+        const id = idInput.value;
+        const name = nameInput.value;
+
+        if (!id || !name) {
+            alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+            return;
+        }
+        // Clear input fields
+        idInput.value = '';
+        nameInput.value = '';
+      }
+
+      // ฟังก์ชันโหลดข้อมูลจากไฟล์ JSON และแสดงบนหน้าเว็บ
+      function loadAttendanceData() {
+        // ฟังก์ชันค้นหา
+        const searchInput = document.querySelector("#search-input");
+        searchInput.addEventListener("input", (event) => {
+          const searchTerm = event.target.value.toLowerCase();
+          const tableBody = document.querySelector("#attendance-table tbody");
+          const rows = tableBody.querySelectorAll("tr");
+          rows.forEach((row) => {
+            const studentName = row
+              .querySelector("td:nth-child(3)")
+              .textContent.toLowerCase();
+            if (studentName.includes(searchTerm)) {
+              row.style.display = "";
+            } else {
+              row.style.display = "none";
+            }
+          });
+        });
+
+        // เเสดงข้อมูลในJson มาโชว์
+        fetch("student_attendance.json")
+          .then((response) => response.json())
+          .then((data) => {
+            const tableBody = document.querySelector("#attendance-table tbody");
+
+            data.forEach((student, index) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${student["รหัสประจำตัว"]}</td>
+                    <td>${student["ชื่อ"]}</td>
+                    <td><input type="checkbox" ${
+                      student["สัปดาห์1"] ? "checked" : ""
+                    } disabled></td>
+                    <td><input type="checkbox" ${
+                      student["สัปดาห์2"] ? "checked" : ""
+                    } ></td>
+                    <td><input type="checkbox" ${
+                      student["สัปดาห์3"] ? "checked" : ""
+                    } ></td>
+                `;
+              tableBody.appendChild(row);
+            });
+          })
+          .catch((error) => console.error("Error loading the data:", error));
+      }
+
+      // เรียกใช้ฟังก์ชันเมื่อหน้าเว็บโหลดเสร็จสมบูรณ์
+      window.onload = loadAttendanceData;
+    </script>
+  </body>
+</html>
